@@ -1,0 +1,28 @@
+name = "openchat"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+# Only used by the "instagram" setup: refreshes its 60-day token every Monday.
+[triggers]
+crons = ["0 3 * * 1"]
+
+[vars]
+# Which Meta setup you use. "facebook" is the one that works today (see docs/SETUP.md).
+#   "facebook"  = API setup with Facebook login (Instagram linked to a Facebook Page)
+#   "unified"   = API setup with Unified login (hit by a Meta bug in Oct 2026)
+#   "instagram" = API setup with Instagram login (no longer offered to new apps)
+IG_LOGIN = "facebook"
+# Meta app ID: developers.facebook.com > your app > App settings > Basic
+META_APP_ID = "REPLACE_WITH_META_APP_ID"
+# Optional: your Instagram account ID, to pick the right Page if you manage several
+# IG_ACCOUNT_ID = ""
+# Only for IG_LOGIN = "unified": the configuration ID from "API setup with Unified login"
+# META_CONFIG_ID = ""
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "REPLACE_WITH_KV_ID" # from `npx wrangler kv namespace create STATE`
+
+# Secrets. Set them with `npx wrangler secret put NAME`; never put them in this file.
+#   IG_APP_SECRET  Meta app secret (App settings > Basic > App secret)
+#   VERIFY_TOKEN   any long random string; also locks the /connect and /setup pages
