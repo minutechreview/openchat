@@ -242,6 +242,7 @@ describe("catch-up for missed webhooks", () => {
     const found = await recentComments(env, now);
     expect(found.map((c) => c.commentId)).toEqual(["new"]);
     expect(await handleComment(found[0], env)).toBe("sent");
+    expect(calls.some((u) => u.endsWith("/v26.0/me/messages"))).toBe(true);
     expect(await handleComment(found[0], env)).toBe("duplicate");
     await commitCounts(env, new Set());
     // Same comment count next time: the post isn't read again.

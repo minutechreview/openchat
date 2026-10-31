@@ -37,8 +37,11 @@ export function getJson(url: string, token: string): Promise<unknown> {
 
 // One private DM to the person who left the comment (Meta allows one per comment, within 7 days).
 export function sendPrivateReply(login: Login, accountId: string, commentId: string, text: string, token: string) {
+  // With a Page token ("facebook"), DMs go through the Page's own messages edge; the
+  // Instagram-account edge answers "App is not connected to the business" (subcode 2534039).
+  const sender = login === "facebook" ? "me" : accountId;
   return call(
-    `${apiBase(login)}/${accountId}/messages`,
+    `${apiBase(login)}/${sender}/messages`,
     { method: "POST", body: JSON.stringify({ recipient: { comment_id: commentId }, message: { text } }) },
     token,
   );

@@ -80,16 +80,13 @@ The real settings are under **Add more to this use case → Webhooks**.
 Until the app is **published**, Meta only delivers the fake test webhooks from the
 dashboard, even for your own account. Publish it (left sidebar → Publish).
 
-## 8. "Allow access to messages" isn't where the docs say
+## 8. "Allow access to messages" isn't where older docs say
 
-Meta's docs say to switch on Settings → Messages and story replies → Message controls →
-Connected tools → **Allow access to messages** in the Instagram app. In current Instagram
-versions that menu isn't there.
+It moved. In the Instagram app: profile → ☰ Menu → **Messages and story replies** →
+**Message requests** → under *Connected tools*, turn on **Allow access to messages**.
+(Older guides point to a "Message controls" menu that no longer exists.)
 
-![No Connected tools menu](img/19-phone-no-connected-tools.png)
-
-We couldn't find it in Settings search either. Skip it and test; if DMs fail with a
-permissions error in `npx wrangler tail`, look for it under Creator/Business tools.
+![The old menu path doesn't have it](img/19-phone-no-connected-tools.png)
 
 ## 9. "Create a new ad account" is forced on you
 
@@ -112,10 +109,11 @@ the blue. To run it by hand: `<WORKER_URL>/setup?key=<VERIFY_TOKEN>&catchup=1`.
 
 ## 12. "The app is not connected to the business" (error subcode 2534039)
 
-Sending the DM fails with this when your Instagram's business portfolio doesn't have the app.
-**Fix:** business.facebook.com/settings → pick the portfolio that holds your Instagram →
-Accounts → **Apps** → **+ Add** → **Connect an app ID** → your App ID. Approve the request if
-the app belongs to another portfolio of yours.
+We hit this when sending the DM through the Instagram account's own messages edge
+(`/<IG_ID>/messages`) with a Facebook Page token. With the Facebook-login setup the DM has to go
+through the Page instead (`/me/messages` with the Page token). The bot does this when
+`IG_LOGIN = "facebook"`, so you shouldn't see it; if you do, check that you're on the latest code
+and that "Allow access to messages" (trap 8) is on.
 
 ## Still stuck?
 
