@@ -5,8 +5,8 @@
 Someone comments a keyword on your Instagram post or reel, and they get your link in their
 DMs within seconds, plus a "Check your DMs 📩" reply under their comment.
 
-ManyChat charges per contact, so a reel that blows up can cost you hundreds of dollars a
-month. This runs on Cloudflare's free tier, and you own it.
+ManyChat charges by contacts (from $14/month for 250 people on its Essential plan), so the
+more a reel blows up, the more you pay. This runs on Cloudflare's free tier, and you own it.
 
 ## What it does
 
