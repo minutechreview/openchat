@@ -44,7 +44,8 @@ export async function handleComment(c: Comment, env: Env): Promise<"skipped" | "
 async function processBody(body: unknown, env: Env): Promise<void> {
   for (const c of parseComments(body)) {
     try {
-      await handleComment(c, env);
+      const result = await handleComment(c, env);
+      console.log("comment", c.commentId, result, JSON.stringify(c.text.slice(0, 60)));
     } catch (err) {
       const { error, detail } = errorDetail(err);
       console.error("comment failed", c.commentId, error, detail);

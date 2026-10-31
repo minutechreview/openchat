@@ -17,6 +17,11 @@ describe("findRule", () => {
   it("needs a whole word", () => {
     expect(findRule("rebuilding", undefined, rules)).toBeUndefined();
   });
+  it("accepts simple plurals", () => {
+    expect(findRule("Builds", undefined, rules)?.dm).toBe("build link");
+    expect(findRule("buildes", undefined, rules)?.dm).toBe("build link");
+    expect(findRule("builder", undefined, rules)).toBeUndefined();
+  });
   it("supports multi-word keywords and media filters", () => {
     expect(findRule("Free Guide please", "m1", rules)?.dm).toBe("guide link");
     expect(findRule("free guide please", "m2", rules)).toBeUndefined();

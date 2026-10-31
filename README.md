@@ -10,7 +10,7 @@ month. This runs on Cloudflare's free tier, and you own it.
 
 ## What it does
 
-- 💬 **Keyword → DM.** Comment "GUIDE" and get the guide. Keywords are matched as whole words, in any case, anywhere in the comment.
+- 💬 **Keyword → DM.** Comment "GUIDE" and get the guide. Keywords are matched as whole words (plurals count too), in any case, anywhere in the comment.
 - 📩 **Public reply** under the comment, picked at random from your list.
 - 🎯 **Per-post rules** (optional): limit a keyword to specific posts.
 - 🔁 **No double DMs.** Meta retries webhooks; the bot remembers which comments it already answered.

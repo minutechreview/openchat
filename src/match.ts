@@ -14,7 +14,9 @@ export function findRule(text: string, mediaId: string | undefined, rules: Rule[
     }
     return rule.keywords.some((kw) => {
       const needle = normalize(kw);
-      return needle.trim().length > 0 && haystack.includes(needle);
+      if (needle.trim().length === 0) return false;
+      // Also accept simple plurals: "skills" or "guides" still count for "skill" and "guide".
+      return [needle, `${needle.trimEnd()}s `, `${needle.trimEnd()}es `].some((n) => haystack.includes(n));
     });
   });
 }
