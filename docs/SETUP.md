@@ -125,6 +125,9 @@ webhooks from the dashboard (see the red box in the screenshot above).
 
 ![Published](img/17-published.png)
 
+Then on your phone: Instagram → profile → ☰ Menu → **Messages and story replies** →
+**Message requests** → turn on **Allow access to messages**.
+
 ## 9. Test
 
 **Pipe test:** on the Webhooks page, click **Test** next to *comments* → **Send to server**.

@@ -13,6 +13,7 @@ month. This runs on Cloudflare's free tier, and you own it.
 - 💬 **Keyword → DM.** Comment "GUIDE" and get the guide. Keywords are matched as whole words (plurals count too), in any case, anywhere in the comment.
 - 📩 **Public reply** under the comment, picked at random from your list.
 - 🎯 **Per-post rules** (optional): limit a keyword to specific posts.
+- 🛟 **Safety net.** Meta sometimes drops webhooks, so every 5 minutes the bot also checks your latest posts for keyword comments it missed.
 - 🔁 **No double DMs.** Meta retries webhooks; the bot remembers which comments it already answered.
 - 🔐 **Signed webhooks.** Every request from Meta is checked against your app secret.
 - 🔑 **No token copying.** The bot's `/connect` page gets its own Instagram token. It doesn't expire.

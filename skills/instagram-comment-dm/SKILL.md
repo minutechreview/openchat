@@ -39,7 +39,7 @@ Order:
 6. Set `META_APP_ID` in `wrangler.toml`, put the `IG_APP_SECRET` and `VERIFY_TOKEN` secrets, and redeploy.
 7. Open `<WORKER_URL>/connect?key=<VERIFY_TOKEN>`, pick the portfolio, the Instagram account and the Page, and expect a ✅.
 8. Add Webhooks: on the Instagram product (not User), set the callback to `<WORKER_URL>/webhook`, then subscribe to `comments`.
-9. Publish the app.
+9. Publish the app, and in the Instagram app turn on Messages and story replies → Message requests → Allow access to messages.
 10. Test with the dashboard's Test button and `npx wrangler tail`, then with a real comment from another account.
 
 ## Diagnosing
@@ -52,6 +52,8 @@ Order:
 | No webhooks in `wrangler tail` | App unpublished, or wrong product | Publish; use the Instagram product, not User |
 | `webhook rejected: bad signature` | Wrong `IG_APP_SECRET` | Use the **Meta** app secret from App settings → Basic |
 | Token sees no Instagram account | Unified login bug | Switch to `IG_LOGIN = "facebook"` |
+| A comment never shows up in `wrangler tail` | Meta dropped the webhook | Wait up to 5 min for the catch-up cron, or open `/setup?key=…&catchup=1` |
+| DM fails with subcode 2534039 | Old code sending via the Instagram account | Update; the Page sends the DM in `facebook` mode. Also check "Allow access to messages" |
 
 `<WORKER_URL>/setup?key=<VERIFY_TOKEN>&debug=1` shows what Meta lets the bot see,
 without revealing the token.
