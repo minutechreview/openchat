@@ -30,6 +30,11 @@ async function call(url: string, init: RequestInit, token: string): Promise<unkn
   return body ? JSON.parse(body) : {};
 }
 
+// A plain GET that returns parsed JSON (throws InstagramError on failure).
+export function getJson(url: string, token: string): Promise<unknown> {
+  return call(url, { method: "GET" }, token);
+}
+
 // One private DM to the person who left the comment (Meta allows one per comment, within 7 days).
 export function sendPrivateReply(login: Login, accountId: string, commentId: string, text: string, token: string) {
   return call(

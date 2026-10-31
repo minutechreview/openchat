@@ -4,6 +4,7 @@ import { parseComments, verifySignature, type Comment } from "./webhook";
 import { refreshToken, replyToComment, sendPrivateReply } from "./instagram";
 import { TOKEN_KEY, errorDetail, getToken, loginOf, type Env } from "./env";
 import { callback, connect, setup } from "./admin";
+import { commitCounts, recentComments } from "./catchup";
 
 export type { Env } from "./env";
 
@@ -27,7 +28,12 @@ export async function handleComment(c: Comment, env: Env): Promise<"skipped" | "
   await env.STATE.put(doneKey, "1", { expirationTtl: DONE_TTL });
 
   const token = await getToken(env);
-  await sendPrivateReply(loginOf(env), c.accountId, c.commentId, rule.dm, token);
+  try {
+    await sendPrivateReply(loginOf(env), c.accountId, c.commentId, rule.dm, token);
+  } catch (err) {
+    await env.STATE.delete(doneKey); // let a later webhook or catch-up run try again
+    throw err;
+  }
 
   const reply = pickReply(rule.publicReplies);
   if (reply) {
@@ -41,16 +47,26 @@ export async function handleComment(c: Comment, env: Env): Promise<"skipped" | "
   return "sent";
 }
 
-async function processBody(body: unknown, env: Env): Promise<void> {
-  for (const c of parseComments(body)) {
+// Returns the posts where a reply failed, so catch-up can retry them.
+async function processAll(comments: Comment[], env: Env): Promise<Set<string>> {
+  const failed = new Set<string>();
+  for (const c of comments) {
     try {
       const result = await handleComment(c, env);
       console.log("comment", c.commentId, result, JSON.stringify(c.text.slice(0, 60)));
     } catch (err) {
+      if (c.mediaId) failed.add(c.mediaId);
       const { error, detail } = errorDetail(err);
       console.error("comment failed", c.commentId, error, detail);
     }
   }
+  return failed;
+}
+
+async function catchUp(env: Env): Promise<number> {
+  const found = await recentComments(env, Date.now());
+  await commitCounts(env, await processAll(found, env));
+  return found.length;
 }
 
 export default {
@@ -59,6 +75,9 @@ export default {
     // Meta asks for a privacy policy URL before an app can go Live.
     if (url.pathname === "/privacy") {
       return new Response(PRIVACY, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+    if (url.pathname === "/setup" && url.searchParams.get("catchup") === "1" && url.searchParams.get("key") === env.VERIFY_TOKEN) {
+      return Response.json({ ok: true, checked: await catchUp(env) });
     }
     if (url.pathname === "/setup") return setup(url, env);
     if (url.pathname === "/connect") return connect(url, env);
@@ -93,14 +112,24 @@ export default {
 
     console.log("webhook received", parseComments(body).length, "comment(s)");
     // Answer Meta right away and do the API calls in the background.
-    ctx.waitUntil(processBody(body, env));
+    ctx.waitUntil(processAll(parseComments(body), env));
     return new Response("OK");
   },
 
-  // Runs on the cron in wrangler.toml and keeps the 60-day token fresh.
-  async scheduled(_event: ScheduledController, env: Env): Promise<void> {
-    if (loginOf(env) !== "instagram") return;
-    const fresh = await refreshToken(await getToken(env));
-    await env.STATE.put(TOKEN_KEY, fresh);
+  // Crons in wrangler.toml: every few minutes, catch comments Meta didn't deliver;
+  // on Mondays, refresh the 60-day token (only the "instagram" setup needs that).
+  async scheduled(event: ScheduledController, env: Env): Promise<void> {
+    if (event.cron === "0 3 * * 1") {
+      if (loginOf(env) !== "instagram") return;
+      const fresh = await refreshToken(await getToken(env));
+      await env.STATE.put(TOKEN_KEY, fresh);
+      return;
+    }
+    try {
+      await catchUp(env);
+    } catch (err) {
+      const { error, detail } = errorDetail(err);
+      console.error("catch-up failed", error, detail);
+    }
   },
 } satisfies ExportedHandler<Env>;

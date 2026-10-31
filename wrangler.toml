@@ -2,9 +2,9 @@ name = "openchat"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
 
-# Only used by the "instagram" setup: refreshes its 60-day token every Monday.
+# Every 5 minutes: answer keyword comments Meta forgot to send. Mondays: refresh the "instagram" token.
 [triggers]
-crons = ["0 3 * * 1"]
+crons = ["*/5 * * * *", "0 3 * * 1"]
 
 [vars]
 # Which Meta setup you use. "facebook" is the one that works today (see docs/SETUP.md).

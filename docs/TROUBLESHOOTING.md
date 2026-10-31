@@ -102,6 +102,21 @@ The bot ignores your own comments, and Instagram won't let you DM yourself. Use 
 account or ask a friend. To check the pipe without a second account, use the **Test** button
 on the Webhooks page ([SETUP.md step 9](SETUP.md#9-test)).
 
+## 11. Meta doesn't send every comment
+
+In our tests one comment arrived by webhook and the next one never did. The bot has a safety
+net for this: every 5 minutes it checks the comment counts on your 25 latest posts, reads the
+posts that changed, and answers any keyword comment it hasn't answered yet. It only looks at
+comments made after the bot's first run, so people who commented earlier aren't messaged out of
+the blue. To run it by hand: `<WORKER_URL>/setup?key=<VERIFY_TOKEN>&catchup=1`.
+
+## 12. "The app is not connected to the business" (error subcode 2534039)
+
+Sending the DM fails with this when your Instagram's business portfolio doesn't have the app.
+**Fix:** business.facebook.com/settings → pick the portfolio that holds your Instagram →
+Accounts → **Apps** → **+ Add** → **Connect an app ID** → your App ID. Approve the request if
+the app belongs to another portfolio of yours.
+
 ## Still stuck?
 
 - `npx wrangler tail` shows every webhook and every error, live.

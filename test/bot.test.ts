@@ -73,6 +73,7 @@ function fakeEnv(): Env {
   const kv = {
     get: async (k: string) => store.get(k) ?? null,
     put: async (k: string, v: string) => void store.set(k, v),
+    delete: async (k: string) => void store.delete(k),
   } as unknown as KVNamespace;
   return { STATE: kv, IG_APP_SECRET: "s3cret", IG_ACCESS_TOKEN: "tok", VERIFY_TOKEN: "vt" };
 }
@@ -216,5 +217,36 @@ describe("facebook login setup", () => {
     expect(await res.text()).toContain("@rayan");
     expect(await e.STATE.get("token")).toBe("pagetok");
     expect(calls.some((u) => u.includes("/me/subscribed_apps?subscribed_fields=feed"))).toBe(true);
+  });
+});
+
+describe("catch-up for missed webhooks", () => {
+  afterEach(() => vi.restoreAllMocks());
+  it("answers only new keyword comments, once", async () => {
+    const { recentComments, commitCounts } = await import("../src/catchup");
+    const now = Date.parse("2026-10-31T02:00:00Z");
+    const calls: string[] = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const u = String(input);
+      calls.push(u);
+      if (u.includes("instagram_business_account")) return Response.json({ instagram_business_account: { id: "acc", username: "rayan" } });
+      if (u.includes("/acc/media")) return Response.json({ data: [{ id: "m1", comments_count: 2 }, { id: "m2", comments_count: 0 }] });
+      if (u.includes("/m1/comments"))
+        return Response.json({ data: [
+          { id: "new", text: `${RULES[0].keywords[0]}S`, timestamp: "2026-10-31T01:31:52+0000", from: { id: "u1" } },
+          { id: "old", text: "Skills", timestamp: "2026-10-27T16:31:42+0000", from: { id: "u2" } },
+        ] });
+      return Response.json({ success: true });
+    });
+    const env = { ...fakeEnv(), IG_LOGIN: "facebook" };
+    const found = await recentComments(env, now);
+    expect(found.map((c) => c.commentId)).toEqual(["new"]);
+    expect(await handleComment(found[0], env)).toBe("sent");
+    expect(await handleComment(found[0], env)).toBe("duplicate");
+    await commitCounts(env, new Set());
+    // Same comment count next time: the post isn't read again.
+    calls.length = 0;
+    expect(await recentComments(env, now)).toEqual([]);
+    expect(calls.some((u) => u.includes("/m1/comments"))).toBe(false);
   });
 });
